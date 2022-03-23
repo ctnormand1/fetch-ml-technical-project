@@ -19,10 +19,18 @@ def get_pixels():
     # Create x and y vectors for evenly spaced points within the rectangle
     corner_x = corner_points[:, 0]
     corner_y = corner_points[:, 1]
-    pixels_x = np.linspace(corner_x.min(), corner_x.max(), image_dimensions[1])
-    pixels_y = np.linspace(corner_y.min(), corner_y.max(), image_dimensions[0])
+
+    # Additional validation of corner_points
+    if (corner_x.min() == corner_x.max()) or (corner_y.min() == corner_y.max()):
+        abort(400, 'Corner points must define a rectangle')
+    norms = np.linalg.norm(corner_points - [corner_x.mean(), corner_y.mean()],
+        axis=1)
+    if any(norms != norms[0]):
+        abort(400, 'Corner points must define a rectangle')
 
     # Assemble matrix of pixel coordinates, return as json
+    pixels_x = np.linspace(corner_x.min(), corner_x.max(), image_dimensions[1])
+    pixels_y = np.linspace(corner_y.min(), corner_y.max(), image_dimensions[0])
     pixels = [[[x, y] for x in pixels_x] for y in pixels_y[::-1]]
     return {'pixels': pixels}
 
